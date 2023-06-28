@@ -12,7 +12,7 @@ A Discord bot that posts and plays random amen breaks - with some other goofy fe
 1. Install `python-dotenv` and `py-cord`
 2. Copy the `.env.example` file, rename it to `.env` and change the values accordingly
 3. The folder `assets` is where all the samples are stored.
-4. Run the python script `amenbreak.py`
+4. Run the python script `main.py`
 
 ### Commands
 
