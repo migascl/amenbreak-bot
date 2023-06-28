@@ -23,6 +23,8 @@ bot = discord.Bot(
     intents=intents,
 )
 
+crazy_text = "Crazy? I was crazy once. They locked me in a room, a rubber room, a rubber room with rats. And rats make me crazy. 🐀"
+
 '''
 ---------------- CLASSES ----------------
 '''
@@ -112,6 +114,17 @@ async def on_ready():
     ))
 
 
+# When a user's message contains the word "crazy"
+@bot.event
+async def on_message(message: discord.Message):
+    # Make sure we won't be replying to ourselves.
+    if message.author.id == bot.user.id:
+        return
+
+    if message.content.__contains__("crazy"):
+        await message.reply(crazy_text, mention_author=True)
+
+
 '''
 ---------------- COMMANDS ----------------
 '''
@@ -183,6 +196,11 @@ async def rant(ctx):
     print(f"User {ctx.author.id} requested rant")
     rants = get_rants()
     await ctx.respond(rants[random.randint(0, len(rants) - 1)])
+
+
+@bot.command(name="crazy", description="I was crazy once...")
+async def rant(ctx):
+    await ctx.respond(crazy_text)
 
 
 class EmbedActions(discord.ui.View):  # View that stores all embed's actions
