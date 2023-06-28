@@ -22,7 +22,6 @@ bot = discord.Bot(
     intents=intents,
 )
 
-crazy_text = "Crazy? I was crazy once. They locked me in a room, a rubber room, a rubber room with rats. And rats make me crazy. 🐀"
 
 '''
 ---------------- CLASSES ----------------
@@ -124,7 +123,8 @@ async def on_message(message: discord.Message):
 
     # When a user's message contains the word "crazy"
     if formatted_message.__contains__("crazy"):
-        await message.reply(formatted_message, mention_author=True)
+        await message.reply("Crazy? I was crazy once. They locked me in a room, a rubber room, a rubber room with "
+                            "rats. And rats make me crazy. 🐀", mention_author=True)
 
 
 '''
@@ -206,11 +206,6 @@ async def rant(ctx):
     await ctx.respond(rants[random.randint(0, len(rants) - 1)])
 
 
-@bot.command(name="crazy", description="I was crazy once...")
-async def rant(ctx):
-    await ctx.respond(crazy_text)
-
-
 class EmbedActions(discord.ui.View):  # View that stores all embed's actions
     def __init__(self):
         super().__init__()
@@ -227,7 +222,7 @@ async def help(ctx: discord.ApplicationContext):
     )
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1095774890579202050/1101090662331453501/icon.png")
     embed.add_field(name="Commands",
-                    value="`/amen` - Get a random amen break sample.\n`/rant` - Make it go schizo.\n`/crazy` - I was crazy once...")
+                    value="`/amen` - Do the amen.\n`/rant` - Make it go schizo.\n`")
     embed.set_image(url="https://cdn.discordapp.com/attachments/1095774890579202050/1101090460635766784/thumbnail.png")
     embed.set_footer(text="made with 💊 by zoobdoob")
 
