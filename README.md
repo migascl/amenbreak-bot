@@ -19,8 +19,9 @@ A Discord bot that posts and plays random amen breaks - with some other goofy fe
 - ##### `/amen` - Get a random amen break sample
 
   _Optional Argument_ (`type`):
-  - `post` (Default) - Responds with a random audio sample.
+  - `post` - Responds with a random audio sample.
   - `play` - Joins a voice channel and plays a random audio sample.
+  - `tabs` - Responds with the amen break tabs.
 
 - ##### `/rant` - Post a random copypasta
 

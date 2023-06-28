@@ -132,61 +132,71 @@ async def on_message(message: discord.Message):
 '''
 
 
-@bot.command(name="amen", description="Get a random amen break sample.")
+@bot.slash_command(name="amen", description="Do the amen and amen related activities")
 async def amen(
         ctx: discord.ApplicationContext,
-        type: discord.Option(
+        choice: discord.Option(
             str,
-            choices=['post', 'play'],
+            choices=['post', 'play', 'tabs'],
             required=True,
-            description="Choose between posting a sample or playing on a voice channel."
+            description="Do the amen."
         )
 ):
-    user = get_user(ctx.author.id)
-    if user == None:
-        print(f"Registering user {ctx.author.id}.")
-        user = User(ctx.author.id, datetime.now())
-
-    cooldown = 180
-    time_diff = datetime.now() - user.timestamp
-    if time_diff.seconds == 0 or time_diff.seconds >= cooldown:
-        sample = get_sample()
-        print(f"User {ctx.author.id} requested sample {sample} ({type})")
-        if type == "post":
-            await ctx.respond(file=discord.File(f'{samples_dir}/{sample}'))
-        else:
-            vc = ctx.voice_client  # define our voice client
-
-            if not vc:  # check if the bot is not in a voice channel
-                vc = await ctx.author.voice.channel.connect()  # connect to the voice channel
-            if ctx.author.voice.channel.id != vc.channel.id:  # check if the bot is not in the voice channel
-                return await ctx.respond("You must be in the same voice channel as the bot.")  # return an error message
-            if vc.is_playing():
-                return await ctx.respond("Bot already playing.")  # return an error message
-
-            song = discord.PCMVolumeTransformer(
-                # discord.FFmpegPCMAudio(executable=f'{ffmpeg_dir}', source=f'{samples_dir}/{sample}'), volume=0.75)
-                discord.FFmpegPCMAudio(source=f'{samples_dir}/{sample}'), volume=0.75)
-
-            if not song:  # check if the song is not found
-                return await ctx.respond("There was an error.")  # return an error message
-            else:
-                await ctx.respond(f"Playing: `{sample}`")  # return a message
-                vc.play(song)  # play the song
-
-            while vc.is_playing():  # Checks if voice is playing
-                await asyncio.sleep(1)  # W hile it's playing it sleeps for 1 second
-            else:
-                await asyncio.sleep(1)  # If it's not playing it waits 15 seconds
-                while vc.is_playing():  # and checks once again if the bot is not playing
-                    break  # if it's playing it breaks
-                await vc.disconnect()  # if not it disconnects
-        user.timestamp = datetime.now()
-        put_user(user)
+    if choice == "tabs":
+        return await ctx.respond("```"
+                                 "Crash   |----------------|----------------|----------------|----------X-----|\n"
+                                 "Hi-hat  |x-x-x-x-x-x-x-x-|x-x-x-x-x-x-x-x-|x-x-x-x-x-x-x-x-|x-x-x-x-x---x-x-|\n"
+                                 "Snare   |----o--o-o--o--o|----o--o-o--o--o|----o--o-o----o-|-o--o--o-o----o-|\n"
+                                 "Kick    |o-o-------oo----|o-o-------oo----|o-o-------o-----|--oo------o-----|\n"
+                                 "        |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |"
+                                 "```")
     else:
-        print(f"User {ctx.author.id} request denied (Cooldown)")
-        return await ctx.respond(
-            f"You're on cooldown ({cooldown - time_diff.seconds} seconds left)")  # return an error message
+        user = get_user(ctx.author.id)
+        if user is None:
+            print(f"Registering user {ctx.author.id}.")
+            user = User(ctx.author.id, datetime.now())
+
+        cooldown = 180
+        time_diff = datetime.now() - user.timestamp
+        if time_diff.seconds == 0 or time_diff.seconds >= cooldown:
+            sample = get_sample()
+            print(f"User {ctx.author.id} requested sample {sample} ({type})")
+            if choice == "post":
+                await ctx.respond(file=discord.File(f'{samples_dir}/{sample}'))
+            if choice == "play":
+                vc = ctx.voice_client  # define our voice client
+
+                if not vc:  # check if the bot is not in a voice channel
+                    vc = await ctx.author.voice.channel.connect()  # connect to the voice channel
+                if ctx.author.voice.channel.id != vc.channel.id:  # check if the bot is not in the voice channel
+                    return await ctx.respond(
+                        "You must be in the same voice channel as the bot.")  # return an error message
+                if vc.is_playing():
+                    return await ctx.respond("Bot already playing.")  # return an error message
+
+                song = discord.PCMVolumeTransformer(
+                    # discord.FFmpegPCMAudio(executable=f'{ffmpeg_dir}', source=f'{samples_dir}/{sample}'), volume=0.75)
+                    discord.FFmpegPCMAudio(source=f'{samples_dir}/{sample}'), volume=0.75)
+
+                if not song:  # check if the song is not found
+                    return await ctx.respond("There was an error.")  # return an error message
+                else:
+                    await ctx.respond(f"Playing: `{sample}`")  # return a message
+                    vc.play(song)  # play the song
+
+                while vc.is_playing():  # Checks if voice is playing
+                    await asyncio.sleep(1)  # W hile it's playing it sleeps for 1 second
+                else:
+                    await asyncio.sleep(1)  # If it's not playing it waits 15 seconds
+                    while vc.is_playing():  # and checks once again if the bot is not playing
+                        break  # if it's playing it breaks
+                    await vc.disconnect()  # if not it disconnects
+            user.timestamp = datetime.now()
+            put_user(user)
+        else:
+            print(f"User {ctx.author.id} request denied (Cooldown)")
+            return await ctx.respond(
+                f"You're on cooldown ({cooldown - time_diff.seconds} seconds left)")  # return an error message
 
 
 @bot.command(name="rant", description="Make it go schizo.")
