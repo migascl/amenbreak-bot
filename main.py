@@ -132,15 +132,13 @@ async def on_message(message: discord.Message):
 '''
 
 
-# TODO fix exploit where using post resets play cooldown
 @bot.command(name="amen", description="Get a random amen break sample.")
 async def amen(
         ctx: discord.ApplicationContext,
         type: discord.Option(
             str,
             choices=['post', 'play'],
-            required=False,
-            default="post",
+            required=True,
             description="Choose between posting a sample or playing on a voice channel."
         )
 ):
@@ -149,10 +147,7 @@ async def amen(
         print(f"Registering user {ctx.author.id}.")
         user = User(ctx.author.id, datetime.now())
 
-    if type == "post":
-        cooldown = 5
-    else:
-        cooldown = 180
+    cooldown = 180
     time_diff = datetime.now() - user.timestamp
     if time_diff.seconds == 0 or time_diff.seconds >= cooldown:
         sample = get_sample()
