@@ -129,8 +129,11 @@ async def on_message(message: discord.Message):
     if message.author.id == bot.user.id:
         return
 
-    if message.content.__contains__("crazy"):
-        await message.reply(crazy_text, mention_author=True)
+    formatted_message = message.content.lower()
+
+    # When a user's message contains the word "crazy"
+    if formatted_message.__contains__("crazy"):
+        await message.reply(formatted_message, mention_author=True)
 
 
 '''
