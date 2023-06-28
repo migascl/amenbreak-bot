@@ -29,15 +29,6 @@ crazy_text = "Crazy? I was crazy once. They locked me in a room, a rubber room, 
 '''
 
 
-class Server:
-    def __init__(self, id: str, crazy_event: bool):
-        self.id = id
-        self.crazy_event = bool
-
-    def to_json(self):
-        return {self.id, self.crazy_event}
-
-
 class User:
     def __init__(self, id: str, timestamp: datetime):
         self.id = id
@@ -122,7 +113,7 @@ async def on_ready():
     ))
 
 
-# When a user's message contains the word "crazy"
+# Read user's messages
 @bot.event
 async def on_message(message: discord.Message):
     # Make sure we won't be replying to ourselves.
@@ -230,7 +221,8 @@ async def help(ctx: discord.ApplicationContext):
         color=discord.Colour.magenta(),
     )
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1095774890579202050/1101090662331453501/icon.png")
-    embed.add_field(name="Commands", value="`/amen` - Get a random amen break sample.\n`/rant` - Make it go schizo.\n`/crazy` - I was crazy once...")
+    embed.add_field(name="Commands",
+                    value="`/amen` - Get a random amen break sample.\n`/rant` - Make it go schizo.\n`/crazy` - I was crazy once...")
     embed.set_image(url="https://cdn.discordapp.com/attachments/1095774890579202050/1101090460635766784/thumbnail.png")
     embed.set_footer(text="made with 💊 by zoobdoob")
 
