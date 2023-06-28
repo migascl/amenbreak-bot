@@ -12,7 +12,6 @@ import asyncio
 dotenv.load_dotenv()
 token = os.getenv("TOKEN")
 invite_url = os.getenv("INVITE")
-ffmpeg_dir = os.getenv("FFMPEG")  # TODO Better audio processor (not use ffmpeg)
 dir = './assets'
 samples_dir = f'{dir}/samples'
 
@@ -23,9 +22,20 @@ bot = discord.Bot(
     intents=intents,
 )
 
+crazy_text = "Crazy? I was crazy once. They locked me in a room, a rubber room, a rubber room with rats. And rats make me crazy. 🐀"
+
 '''
 ---------------- CLASSES ----------------
 '''
+
+
+class Server:
+    def __init__(self, id: str, crazy_event: bool):
+        self.id = id
+        self.crazy_event = bool
+
+    def to_json(self):
+        return {self.id, self.crazy_event}
 
 
 class User:
@@ -112,6 +122,17 @@ async def on_ready():
     ))
 
 
+# When a user's message contains the word "crazy"
+@bot.event
+async def on_message(message: discord.Message):
+    # Make sure we won't be replying to ourselves.
+    if message.author.id == bot.user.id:
+        return
+
+    if message.content.__contains__("crazy"):
+        await message.reply(crazy_text, mention_author=True)
+
+
 '''
 ---------------- COMMANDS ----------------
 '''
@@ -155,7 +176,8 @@ async def amen(
                 return await ctx.respond("Bot already playing.")  # return an error message
 
             song = discord.PCMVolumeTransformer(
-                discord.FFmpegPCMAudio(executable=f'{ffmpeg_dir}', source=f'{samples_dir}/{sample}'), volume=0.75)
+                # discord.FFmpegPCMAudio(executable=f'{ffmpeg_dir}', source=f'{samples_dir}/{sample}'), volume=0.75)
+                discord.FFmpegPCMAudio(source=f'{samples_dir}/{sample}'), volume=0.75)
 
             if not song:  # check if the song is not found
                 return await ctx.respond("There was an error.")  # return an error message
@@ -185,6 +207,11 @@ async def rant(ctx):
     await ctx.respond(rants[random.randint(0, len(rants) - 1)])
 
 
+@bot.command(name="crazy", description="I was crazy once...")
+async def rant(ctx):
+    await ctx.respond(crazy_text)
+
+
 class EmbedActions(discord.ui.View):  # View that stores all embed's actions
     def __init__(self):
         super().__init__()
@@ -200,9 +227,9 @@ async def help(ctx: discord.ApplicationContext):
         color=discord.Colour.magenta(),
     )
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1095774890579202050/1101090662331453501/icon.png")
-    embed.add_field(name="Commands", value="`/amen` - Get a random amen break sample.\n`/rant` - Make it go schizo.")
+    embed.add_field(name="Commands", value="`/amen` - Get a random amen break sample.\n`/rant` - Make it go schizo.\n`/crazy` - I was crazy once...")
     embed.set_image(url="https://cdn.discordapp.com/attachments/1095774890579202050/1101090460635766784/thumbnail.png")
-    embed.set_footer(text="made with 💊 by zoob#8841")
+    embed.set_footer(text="made with 💊 by zoobdoob")
 
     await ctx.respond(embed=embed, view=EmbedActions())
 
