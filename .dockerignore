@@ -1,0 +1,6 @@
+venv/
+users.json
+.env.example
+.gitignore
+.git/
+.idea/
