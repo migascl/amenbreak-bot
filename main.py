@@ -238,7 +238,7 @@ async def help(ctx: discord.ApplicationContext):
     )
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1095774890579202050/1101090662331453501/icon.png")
     embed.add_field(name="Commands",
-                    value="`/amen` - Do the amen and amen related activities.\n`/rant` - Make it go schizo.\n")
+                    value="`/amen` - Do the amen and amen related activities.\n`/poop` - Start pooping \n`/rant` - Make it go schizo.\n")
     embed.set_image(url="https://cdn.discordapp.com/attachments/1095774890579202050/1101090460635766784/thumbnail.png")
     embed.set_footer(text="made with 💊 by zoobdoob")
 
