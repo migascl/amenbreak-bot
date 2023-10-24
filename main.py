@@ -199,6 +199,21 @@ async def amen(
             return await ctx.respond(
                 f"You're on cooldown ({cooldown - time_diff.seconds} seconds left)")  # return an error message
 
+@bot.slash_command(name="poop", description="Play music that makes you poop")
+async def poop(
+        ctx: discord.ApplicationContext,
+        choice: discord.Option(
+            str,
+            choices=['play', 'stop'],
+            required=True,
+            description="Do the amen."
+        )):
+    vc = ctx.voice_client
+    if choice == "play":
+        await vc_handler(ctx, f'{dir}/poop.mp3', "Pooping :)")
+    if choice == "stop":
+        await vc.disconnect()
+        await ctx.respond("Stopped pooping :(")
 
 @bot.command(name="rant", description="Make it go schizo.")
 async def rant(ctx):
