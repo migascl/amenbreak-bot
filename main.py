@@ -1,10 +1,11 @@
 import dotenv
 import os
 import discord
-from datetime import datetime
 import json
 import random
 import asyncio
+from discord.ext import commands
+
 
 '''
 ---------------- VARIABLES ----------------
@@ -29,12 +30,12 @@ bot = discord.Bot(
 
 
 class User:
-    def __init__(self, id: str, timestamp: datetime):
+    def __init__(self, id: int, amen_id: str):
         self.id = id
-        self.timestamp = timestamp
+        self.amen_id = amen_id
 
     def to_json(self):
-        return {self.id, self.timestamp.isoformat()}
+        return {self.id, {"amen_id": self.amen_id}}
 
 
 '''
@@ -53,14 +54,10 @@ def verify_data():
 
 
 # Get a random audio file from the samples directory and return its file name
-def get_sample():
-    count = 0
-    for path in os.scandir(samples_dir):
-        if path.is_file():
-            count += 1
-    index = random.randint(0, count - 1)
-    file = os.listdir(samples_dir)[index]
-    return file
+def get_sample(index: int = None):
+    if not index:
+        index = random.randint(1, os.listdir(samples_dir).__len__() - 1)
+    return os.listdir(samples_dir)[index]
 
 
 # Get all copypasta records as a json file
@@ -76,7 +73,7 @@ def get_user(id):
             users = json.load(file)
             id_str = str(id)
             if users[id_str]:
-                user = User(id_str, datetime.strptime(users[id_str], '%Y-%m-%dT%H:%M:%S.%f'))
+                user = User(id, users[id_str].amen_id)
                 print(f'User {id_str} found.')
                 return user
     except:
@@ -88,11 +85,11 @@ def put_user(user: User):
     try:
         with open('users.json', 'r') as file:
             users = json.load(file)
-            users[user.id] = user.timestamp.isoformat()
+            users[str(user.id)] = {"amen_id": user.amen_id}
     except:
         users = user.to_json()
     with open("users.json", "w") as file:
-        json.dump(users, file)
+        json.dump(users, file, indent=4, separators=(',', ': '))
         return True
 
 
@@ -115,7 +112,7 @@ async def on_ready():
 # Read user's messages
 @bot.event
 async def on_message(message: discord.Message):
-    # Make sure we won't be replying to ourselves.
+    # Ignore bot self messages
     if message.author.id == bot.user.id:
         return
 
@@ -125,22 +122,33 @@ async def on_message(message: discord.Message):
     if formatted_message.__contains__("crazy"):
         await message.reply("Crazy? I was crazy once. They locked me in a room, a rubber room, a rubber room with "
                             "rats. And rats make me crazy. 🐀", mention_author=True)
+    elif random.random() < 0.005:
+        await message.reply("real", mention_author=True)
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        return await ctx.respond(f"You're on cooldown ({round(error.retry_after, 2)})")
 
 
 '''
 ---------------- COMMANDS ----------------
 '''
 
-async def vc_handler(ctx: discord.ApplicationContext, sample: str, status_message: str):
-    vc = ctx.voice_client  # define our voice client
 
-    if not vc:  # check if the bot is not in a voice channel
-        vc = await ctx.author.voice.channel.connect()  # connect to the voice channel
-    if ctx.author.voice.channel.id != vc.channel.id:  # check if the bot is not in the voice channel
+async def vc_handler(ctx: discord.ApplicationContext, sample: str, status_message: str):
+    vc = ctx.voice_client
+
+    # Connect to voice chat
+    if not vc:
+        vc = await ctx.author.voice.channel.connect()
+    # Check if the bot is not in the voice channel
+    if ctx.author.voice.channel.id != vc.channel.id:
         return await ctx.respond(
-            "You must be in the same voice channel as the bot.")  # return an error message
+            "You must be in the same voice channel as the bot.")
     if vc.is_playing():
-        return await ctx.respond("Bot already playing.")  # return an error message
+        return await ctx.respond("Already amen breaking...")
 
     song = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(source=f'{sample}'), volume=0.75)
 
@@ -159,54 +167,65 @@ async def vc_handler(ctx: discord.ApplicationContext, sample: str, status_messag
         await vc.disconnect()  # if not it disconnects
 
 
-@bot.slash_command(name="amen", description="Do the amen and amen related activities")
-async def amen(
-        ctx: discord.ApplicationContext,
-        choice: discord.Option(
-            str,
-            choices=['post', 'play', 'tabs'],
-            required=True,
-            description="Do the amen."
-        )
-):
-    if choice == "tabs":
-        return await ctx.respond("```"
-                                 "Crash   |----------------|----------------|----------------|----------X-----|\n"
-                                 "Hi-hat  |x-x-x-x-x-x-x-x-|x-x-x-x-x-x-x-x-|x-x-x-x-x-x-x-x-|x-x-x-x-x---x-x-|\n"
-                                 "Snare   |----o--o-o--o--o|----o--o-o--o--o|----o--o-o----o-|-o--o--o-o----o-|\n"
-                                 "Kick    |o-o-------oo----|o-o-------oo----|o-o-------o-----|--oo------o-----|\n"
-                                 "        |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |"
-                                 "```")
-    else:
-        user = get_user(ctx.author.id)
-        if user is None:
-            print(f"Registering user {ctx.author.id}.")
-            user = User(ctx.author.id, datetime.now())
+def init_user(author: discord.User):
+    user = get_user(author.id)
+    if user is None:
+        print(f"Registering user {author.id}.")
+        random.seed(author.id)
+        user = User(author.id, get_sample())
+        put_user(user)
+    return user
 
-        cooldown = 180
-        time_diff = datetime.now() - user.timestamp
-        if time_diff.seconds == 0 or time_diff.seconds >= cooldown:
-            sample = get_sample()
-            print(f"User {ctx.author.id} requested sample {sample} ({type})")
-            if choice == "post":
-                await ctx.respond(file=discord.File(f'{samples_dir}/{sample}'))
-            if choice == "play":
-                await vc_handler(ctx, f'{samples_dir}/{sample}', f"Playing: `{sample}`")
-            user.timestamp = datetime.now()
-            put_user(user)
-        else:
-            print(f"User {ctx.author.id} request denied (Cooldown)")
-            return await ctx.respond(
-                f"You're on cooldown ({cooldown - time_diff.seconds} seconds left)")  # return an error message
 
-@bot.slash_command(name="poop", description="Play music that makes you poop")
+amen = discord.SlashCommandGroup("amen", "Do the amen and amen related activities")
+
+
+@amen.command(description="Get a random break")
+@commands.cooldown(1, 20, commands.BucketType.user)
+async def post(ctx):
+    sample = get_sample()
+    print(f"User {ctx.author.id} requested sample {sample} ({type})")
+    await ctx.respond(file=discord.File(f'{samples_dir}/{sample}'))
+
+
+@amen.command(description="Play a random break on the voice chat")
+@commands.cooldown(1, 3, commands.BucketType.guild)
+async def play(ctx: discord.ApplicationContext):
+    sample = get_sample()
+    print(f"User {ctx.author.id} requested sample {sample} ({type})")
+    await vc_handler(ctx, f'{samples_dir}/{sample}', f"Playing: `{sample}`")
+
+
+@amen.command(description="Calculate the break meant for you")
+@commands.cooldown(1, 20, commands.BucketType.user)
+async def calculate(ctx, person: discord.Option(discord.SlashCommandOptionType.user, required=False,
+                                                description="Check someone else's...")):
+    user = init_user(person or ctx.author)
+    return await ctx.respond((person.mention if person is not None else ctx.author.mention) + " amen break is...",
+                             file=discord.File(f'{samples_dir}/{user.amen_id}'))
+
+
+@amen.command(description="Learn the amen")
+async def tabs(ctx):
+    return await ctx.respond("```"
+                             "Crash   |----------------|----------------|----------------|----------X-----|\n"
+                             "Hi-hat  |x-x-x-x-x-x-x-x-|x-x-x-x-x-x-x-x-|x-x-x-x-x-x-x-x-|x-x-x-x-x---x-x-|\n"
+                             "Snare   |----o--o-o--o--o|----o--o-o--o--o|----o--o-o----o-|-o--o--o-o----o-|\n"
+                             "Kick    |o-o-------oo----|o-o-------oo----|o-o-------o-----|--oo------o-----|\n"
+                             "        |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |1 + 2 + 3 + 4 + |"
+                             "```")
+
+
+bot.add_application_command(amen)
+
+
+@bot.slash_command(name="poop", description="Play music that makes you poop 💩")
 async def poop(
         ctx: discord.ApplicationContext,
         choice: discord.Option(
             str,
             choices=['play', 'stop'],
             required=True,
-            description="Do the amen."
         )):
     vc = ctx.voice_client
     if choice == "play":
@@ -214,6 +233,7 @@ async def poop(
     if choice == "stop":
         await vc.disconnect()
         await ctx.respond("Stopped pooping :(")
+
 
 @bot.command(name="rant", description="Make it go schizo.")
 async def rant(ctx):
