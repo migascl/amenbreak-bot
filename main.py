@@ -1,18 +1,16 @@
-import dotenv
 import os
-import discord
 import json
 import random
 import asyncio
+import discord
 from discord.ext import commands
 
 
 '''
 ---------------- VARIABLES ----------------
 '''
-dotenv.load_dotenv()
-token = os.getenv("TOKEN")
-invite_url = os.getenv("INVITE")
+token = os.environ['TOKEN']
+invite_url = os.environ['INVITE']
 dir = './assets'
 samples_dir = f'{dir}/samples'
 
@@ -268,4 +266,5 @@ async def help(ctx: discord.ApplicationContext):
 '''
 ---------------- INIT ----------------
 '''
+
 bot.run(token)

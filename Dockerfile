@@ -23,4 +23,6 @@ RUN apt-get update \
 && apt-get auto-remove -y \
 && rm -rf /var/lib/apt/lists/*
 
+ENV TOKEN="" INVITE=""
+
 CMD [ "python", "./main.py" ]

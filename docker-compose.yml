@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  amenbreak-bot:
+    build: .
+    image: amenbreak-bot
+    container_name: amenbreak-bot
+    environment:
+      TOKEN: ""
+      INVITE: ""
+    restart: unless-stopped

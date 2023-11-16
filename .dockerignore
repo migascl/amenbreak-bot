@@ -1,6 +1,5 @@
-venv/
-users.json
-.env.example
 .gitignore
 .git/
+venv/
 .idea/
+users.json
