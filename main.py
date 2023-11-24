@@ -120,7 +120,7 @@ async def on_message(message: discord.Message):
     if formatted_message.__contains__("crazy"):
         await message.reply("Crazy? I was crazy once. They locked me in a room, a rubber room, a rubber room with "
                             "rats. And rats make me crazy. 🐀", mention_author=True)
-    elif random.random() < 0.005:
+    elif random.random() * 100 < 0.005:
         await message.reply("real", mention_author=True)
 
 
